@@ -1,0 +1,63 @@
+subword-nmt learn-bpe -s 2500 < ./data/en-fr/preprocessed/train.all > ./data/en-fr/preprocessed/bpe.codes
+
+subword-nmt apply-bpe -c ./data/en-fr/preprocessed/bpe.codes < ./data/en-fr/preprocessed/train.en > ./data/en-fr/preprocessed/train.en.bpe
+
+python .\preprocess.py --source-lang en --target-lang fr --train-prefix ./data/en-fr/preprocessed/train --tiny-train-prefix ./data/en-fr/preprocessed/tiny_train --valid-prefix ./data/en-fr/preprocessed/valid --test-prefix ./data/en-fr/preprocessed/test
+
+[2021-11-08 15:29:37] Built a binary dataset for ./data/en-fr/preprocessed/train.en: 10000 sentences, 113508 tokens, 0.083% replaced by unknown token
+[2021-11-08 15:29:38] Built a binary dataset for ./data/en-fr/preprocessed/tiny_train.en: 1000 sentences, 11426 tokens, 0.114% replaced by unknown token
+[2021-11-08 15:29:38] Built a binary dataset for ./data/en-fr/preprocessed/valid.en: 500 sentences, 5565 tokens, 0.216% replaced by unknown token
+[2021-11-08 15:29:38] Built a binary dataset for ./data/en-fr/preprocessed/test.en: 500 sentences, 5677 tokens, 0.370% replaced by unknown token
+[2021-11-08 15:29:39] Built a binary dataset for ./data/en-fr/preprocessed/train.fr: 10000 sentences, 128576 tokens, 0.085% replaced by unknown token
+[2021-11-08 15:29:40] Built a binary dataset for ./data/en-fr/preprocessed/tiny_train.fr: 1000 sentences, 12943 tokens, 0.155% replaced by unknown token
+[2021-11-08 15:29:40] Built a binary dataset for ./data/en-fr/preprocessed/valid.fr: 500 sentences, 6381 tokens, 0.157% replaced by unknown token
+[2021-11-08 15:29:40] Built a binary dataset for ./data/en-fr/preprocessed/test.fr: 500 sentences, 6375 tokens, 0.220% replaced by unknown token
+
+python train.py --data data/en-fr/prepared --source-lang fr --target-lang en --save-dir assignments/03/bpe/checkpoints --train-on-tiny
+python translate.py --data data/en-fr/prepared --dicts data/en-fr/prepared --data data/en-fr/prepared --checkpoint-path assignments/03/bpe/checkpoints/checkpoint_last.pt --output assignments/03/bpe/bpe_translations.txt
+
+scripts/postprocess.sh assignments/03/bpe/bpe_translations.txt assignments/03/bpe/bpe_translations.p.txt en
+sed -r -i 's/@@(\s)?//g' assignments/03/bpe/bpe_translations.p.txt
+
+cat assignments/03/bpe/bpe_translations.p.txt | sacrebleu data/en-fr/raw/test.en
+
+INFO: Loaded a source dictionary (fr) with 1828 words
+INFO: Loaded a target dictionary (en) with 1744 words
+INFO: Built a model with 734160 parameters
+
+INFO: Epoch 050: loss 1.857 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.98 | clip 0.9964
+INFO: Epoch 050: valid_loss 2.53 | num_tokens 11.1 | batch_size 500 | valid_perplexity 12.5
+INFO: Epoch 051: loss 1.849 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 60.07 | clip 0.9968
+INFO: Epoch 051: valid_loss 2.52 | num_tokens 11.1 | batch_size 500 | valid_perplexity 12.5
+INFO: Epoch 052: loss 1.836 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.85 | clip 0.9976
+INFO: Epoch 052: valid_loss 2.55 | num_tokens 11.1 | batch_size 500 | valid_perplexity 12.8
+INFO: Epoch 053: loss 1.828 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.78 | clip 0.9964
+INFO: Epoch 053: valid_loss 2.51 | num_tokens 11.1 | batch_size 500 | valid_perplexity 12.3
+INFO: Epoch 054: loss 1.82 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.72 | clip 0.9963
+INFO: Epoch 054: valid_loss 2.51 | num_tokens 11.1 | batch_size 500 | valid_perplexity 12.3
+INFO: Epoch 055: loss 1.811 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.62 | clip 0.9971
+INFO: Epoch 055: valid_loss 2.51 | num_tokens 11.1 | batch_size 500 | valid_perplexity 12.2
+INFO: Epoch 056: loss 1.799 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.72 | clip 0.9955
+INFO: Epoch 056: valid_loss 2.5 | num_tokens 11.1 | batch_size 500 | valid_perplexity 12.2
+INFO: Epoch 057: loss 1.792 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.59 | clip 0.9965
+INFO: Epoch 057: valid_loss 2.46 | num_tokens 11.1 | batch_size 500 | valid_perplexity 11.7
+INFO: Epoch 058: loss 1.788 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.82 | clip 0.9961
+INFO: Epoch 058: valid_loss 2.47 | num_tokens 11.1 | batch_size 500 | valid_perplexity 11.8
+INFO: Epoch 059: loss 1.776 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.42 | clip 0.9959
+INFO: Epoch 059: valid_loss 2.46 | num_tokens 11.1 | batch_size 500 | valid_perplexity 11.7
+INFO: Epoch 060: loss 1.771 | lr 0.0003 | num_tokens 11.35 | batch_size 1 | grad_norm 59.61 | clip 0.9969
+INFO: Epoch 060: valid_loss 2.47 | num_tokens 11.1 | batch_size 500 | valid_perplexity 11.8
+INFO: No validation set improvements observed for 3 epochs. Early stop!
+
+{
+ "name": "BLEU",
+ "score": 21.1,
+ "signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0",
+ "verbose_score": "50.9/26.8/15.8/9.2 (BP = 1.000 ratio = 1.178 hyp_len = 4583 ref_len = 3892)",
+ "nrefs": "1",
+ "case": "mixed",
+ "eff": "no",
+ "tok": "13a",
+ "smooth": "exp",
+ "version": "2.0.0"
+}

@@ -4,6 +4,8 @@ __pycache__/
 2020/
 tests/
 tutorials/
+venv/
+.idea
 
 # files for assignment 3
 train_with_bpe_dropout.py

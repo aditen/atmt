@@ -124,7 +124,8 @@ class LSTMEncoder(Seq2SeqEncoder):
         src_embeddings = _src_embeddings.transpose(0, 1)
 
         # Pack embedded tokens into a PackedSequence
-        packed_source_embeddings = nn.utils.rnn.pack_padded_sequence(src_embeddings, src_lengths)
+        # need to call .cpu() because of some bug. See the following: https://github.com/pytorch/pytorch/issues/43227
+        packed_source_embeddings = nn.utils.rnn.pack_padded_sequence(src_embeddings, src_lengths.cpu())
 
         # Pass source input through the recurrent layer(s)
         packed_outputs, (final_hidden_states, final_cell_states) = self.lstm(packed_source_embeddings)
