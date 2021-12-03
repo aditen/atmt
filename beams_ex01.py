@@ -1,8 +1,9 @@
-import subprocess
-from tqdm import tqdm
-import shlex
 import json
+import shlex
+import subprocess
+
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 evaluate = False
 plot = True

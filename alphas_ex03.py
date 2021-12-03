@@ -5,12 +5,12 @@ import subprocess
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-evaluate = True
-plot = False
+evaluate = False
+plot = True
 if __name__ == "__main__":
     values_q = [i * 0.25 for i in range(0, 5)]
     values_t = [i * 0.1 for i in range(1, 5)]
-    values = [0.15]# values_t + values_q
+    values = [0.15] + values_t + values_q
     values = sorted(values)
     best_beam_size = 20
 
