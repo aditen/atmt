@@ -161,9 +161,9 @@
                         backoff_log_p = log_probs[i, :, j+1]
                         next_word = torch.where(best_candidate == tgt_dict.unk_idx, backoff_candidate, best_candidate)
                         log_p = torch.where(best_candidate == tgt_dict.unk_idx, backoff_log_p, best_log_p)
-                        diverse_to_add = torch.where(best_candidate == tgt_dict.unk_idx, j+1, j) # new line Diverse Beam Search addition
-                        # or non torch way, one or the other should work, try both
-                        # diverse_to_add = j+1 if best_candidate == tgt_dict.unk_idx else j
+                        diverse_to_add = (j+1) # new line Diverse Beam Search addition. Updated, Just the number it is as a candidate. 
+                        # torch.where(best_candidate == tgt_dict.unk_idx, j+1, j) (previous idea (no need, ignore unk issue))
+                        # diverse_to_add = j+1 if best_candidate == tgt_dict.unk_idx else j (previous idea 2 (no need, ignore unk issue))
                         log_p = log_p[-1]
                         next_word = torch.cat((prev_words[i][1:], next_word[-1:]))
 
