@@ -49,6 +49,7 @@ class BeamSearch(object):
             node = self.nodes.get()
             merged.put(node)
 
+        # TODO: here we could get more than just the best from the queue
         node = merged.get()
         node = (node[0], node[2])
 
