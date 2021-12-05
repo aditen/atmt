@@ -188,9 +188,9 @@
                             node = BeamSearchNode(
                                 search, node.emb, node.lstm_out, node.final_hidden,
                                 node.final_cell, node.mask, torch.cat((prev_words[i][0].view([1]),
-                                next_word)), (node.logp + log_p + (-gamma * diverse_to_add)), node.length + 1
-                                ) # change of line for diverse_beam_search
-                            search.add(-node.eval(args.alpha), node)
+                                next_word)), (node.logp + log_p), node.length + 1
+                                ) # reverted back to original
+                            search.add((-node.eval(args.alpha) + (-args.gamma * diverse_to_add)), node) #changed for div beam search
 
                 # #import pdb;pdb.set_trace()
                 # __QUESTION 5: What happens internally when we prune our beams?
