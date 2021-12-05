@@ -5,30 +5,31 @@ import subprocess
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-evaluate = False
-plot = True
+evaluate = True
+plot = False
 best_alpha = 0.1
+best_beam = 20 # TODO: change
 if __name__ == "__main__":
-    values = [2 ** i for i in range(6)]
-    values += [5 * i for i in range(1, 7)]
+    values = [0.2 * i for i in range(0, 6)]
+    values = values[2:3]
     values = sorted(values)
 
     if evaluate:
         for i in tqdm(values):
-            cmd = 'python translate_beam.py ' \
+            cmd = 'python translate_beam_div.py ' \
                   '--dicts data/en-fr/old_prepared ' \
                   '--data data/en-fr/old_prepared ' \
                   '--checkpoint-path assignments/03/baseline/checkpoints/checkpoint_last.pt ' \
-                  f'--output assignments/04/baseline/beam_size_{str(i)}_bestalpha_raw.txt ' \
-                  f'--beam-size {str(i)} --alpha {best_alpha:.1f}'
-            p = subprocess.run(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+                  f'--output assignments/04/baseline/gammas_{i:.1f}_raw.txt ' \
+                  f'--beam-size {best_beam} --alpha {best_alpha:.1f} --gamma {i:.1f}'
+            p = subprocess.run(cmd)
             assert p.returncode == 0, "Non 0 return code for Prediction"
             p = subprocess.call(shlex.split(
-                f"postprocess_cd.sh assignments/04/baseline/beam_size_{str(i)}_bestalpha_raw.txt assignments/04/baseline/beam_size_{str(i)}_bestalpha.txt en"),
+                f"postprocess_cd.sh assignments/04/baseline/gammas_{i:.1f}_raw.txt assignments/04/baseline/gammas_{i:.1f}.txt en"),
                 cwd="./scripts", shell=True)
             assert p == 0, "Non 0 return code for Postprocess"
             p = subprocess.run(
-                f"sacrebleu data/en-fr/raw/test.en -i assignments/04/baseline/beam_size_{str(i)}_bestalpha.txt > assignments/04/baseline/beam_size_{str(i)}_bestalpha_scores.json",
+                f"sacrebleu data/en-fr/raw/test.en -i assignments/04/baseline/gammas_{i:.1f}.txt > assignments/04/baseline/gammas_{i:.1f}_scores.json",
                 shell=True)
             assert p.returncode == 0, "Non 0 return code for Sacrebleu"
 
