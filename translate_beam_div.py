@@ -34,9 +34,31 @@ def get_args():
     parser.add_argument('--beam-size', default=5, type=int, help='number of hypotheses expanded in beam search')
     # alpha hyperparameter for length normalization (described as lp in https://arxiv.org/pdf/1609.08144.pdf equation 14)
     parser.add_argument('--alpha', default=0.0, type=float, help='alpha for softer length normalization')
-    parser.add_argument('--gamma', default=0, type=float, help='gamma for diverse beam search')  # new line
+    parser.add_argument('--gamma', default=0.0, type=float, help='gamma for diverse beam search')  # new line
     # gamma hyperparameter for diverse beam search.
     return parser.parse_args()
+
+
+def stringify(n_bests, tgt_dict, i=0):
+    best_sents = torch.stack([n_best[i][1].sequence[1:].cpu() for n_best in n_bests])
+    decoded_batch = best_sents.numpy()
+    # import pdb;pdb.set_trace()
+
+    output_sentences = [decoded_batch[row, :] for row in range(decoded_batch.shape[0])]
+
+    # __QUESTION 6: What is the purpose of this for loop?
+    temp = list()
+    for sent in output_sentences:
+        first_eos = np.where(sent == tgt_dict.eos_idx)[0]
+        if len(first_eos) > 0:
+            temp.append(sent[:first_eos[0]])
+        else:
+            temp.append(sent)
+    output_sentences = temp
+
+    # Convert arrays of indices into strings of words
+    output_sentences = [tgt_dict.string(sent) for sent in output_sentences]
+    return output_sentences
 
 
 def main(args):
@@ -197,7 +219,8 @@ def main(args):
                             node.length + 1
                         )  # reverted back to original
                         with torch.no_grad():
-                            search.add(-node.eval(args.alpha) + log(1e-12 if args.gamma == 1 else (1 - args.gamma)) * diverse_to_add,
+                            search.add(-node.eval(args.alpha) + log(
+                                1e-12 if args.gamma == 1 else (1 - args.gamma)) * diverse_to_add,
                                        node)  # changed for div beam search
             # #import pdb;pdb.set_trace()
             # __QUESTION 5: What happens internally when we prune our beams?
@@ -205,28 +228,13 @@ def main(args):
             for search in searches:
                 search.prune()
 
-        # Segment into sentences
-        best_sents = torch.stack([search.get_best()[1].sequence[1:].cpu() for search in searches])
-        decoded_batch = best_sents.numpy()
-        # import pdb;pdb.set_trace()
+        n_bests = [search.get_best(n=3) for search in searches]
 
-        output_sentences = [decoded_batch[row, :] for row in range(decoded_batch.shape[0])]
+        output_sentences = [stringify(n_bests, tgt_dict, i) for i in range(3)]
 
-        # __QUESTION 6: What is the purpose of this for loop?
-        temp = list()
-        for sent in output_sentences:
-            first_eos = np.where(sent == tgt_dict.eos_idx)[0]
-            if len(first_eos) > 0:
-                temp.append(sent[:first_eos[0]])
-            else:
-                temp.append(sent)
-        output_sentences = temp
-
-        # Convert arrays of indices into strings of words
-        output_sentences = [tgt_dict.string(sent) for sent in output_sentences]
-
-        for ii, sent in enumerate(output_sentences):
-            all_hyps[int(sample['id'].data[ii])] = sent
+        for ii in range(len(output_sentences[0])):
+            all_hyps[int(sample['id'].data[ii])] = " ### ".join([x[ii] for x in output_sentences])
+            print(" ### ".join([x[ii] for x in output_sentences]))
 
     # Write to file
     if args.output is not None:

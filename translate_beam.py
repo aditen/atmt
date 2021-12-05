@@ -195,7 +195,7 @@ def main(args):
                 search.prune()
 
         # Segment into sentences
-        best_sents = torch.stack([search.get_best()[1].sequence[1:].cpu() for search in searches])
+        best_sents = torch.stack([search.get_best(n=1)[0][1].sequence[1:].cpu() for search in searches])
         decoded_batch = best_sents.numpy()
         #import pdb;pdb.set_trace()
 
