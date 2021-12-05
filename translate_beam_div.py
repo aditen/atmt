@@ -35,6 +35,8 @@ def get_args():
     # alpha hyperparameter for length normalization (described as lp in https://arxiv.org/pdf/1609.08144.pdf equation 14)
     parser.add_argument('--alpha', default=0.0, type=float, help='alpha for softer length normalization')
     parser.add_argument('--gamma', default=0.0, type=float, help='gamma for diverse beam search')  # new line
+    parser.add_argument('--n-best', default=1, type=int,
+                        help='N Best to write to file for beam search (separated by ###)')  # new line
     # gamma hyperparameter for diverse beam search.
     return parser.parse_args()
 
@@ -228,9 +230,9 @@ def main(args):
             for search in searches:
                 search.prune()
 
-        n_bests = [search.get_best(n=3) for search in searches]
+        n_bests = [search.get_best(n=args.n_best) for search in searches]
 
-        output_sentences = [stringify(n_bests, tgt_dict, i) for i in range(3)]
+        output_sentences = [stringify(n_bests, tgt_dict, i) for i in range(args.n_best)]
 
         for ii in range(len(output_sentences[0])):
             all_hyps[int(sample['id'].data[ii])] = " ### ".join([x[ii] for x in output_sentences])
