@@ -5,8 +5,8 @@ import subprocess
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-evaluate = True
-plot = False
+evaluate = False
+plot = True
 best_alpha = 0.1
 best_beam = 20
 
@@ -49,7 +49,8 @@ if __name__ == "__main__":
         plt.title(
             'BLEU Score for different Gammas')
         ax1.set_xlabel('Gamma')
+        ax1.set_xscale('log')
         ax1.set_ylabel('BLEU Score')
         ax1.set_ylim((0, max(bleu_scores) + 1))
         plt.show()
-        fig.savefig("assignments/04/baseline/beam_sizes_best_alpha_plot.png")
+        fig.savefig("assignments/04/baseline/gammas_plot.png")
