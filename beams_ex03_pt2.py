@@ -35,7 +35,6 @@ if __name__ == "__main__":
     if plot:
         bleu_scores = []
         bleu_scores_alpha_zero = []
-        brev_pens = []
         fig, ax1 = plt.subplots()
         for val in values:
             filename = f'assignments/04/baseline/beam_size_{str(val)}_bestalpha_scores.json'
@@ -43,23 +42,16 @@ if __name__ == "__main__":
             bleu_scores.append(json_data['score'])
             bp_start_index = json_data['verbose_score'].index("BP = ") + len("BP = ")
             bp_end_index = json_data['verbose_score'].index(" ", bp_start_index)
-            brev_pens.append(float(json_data['verbose_score'][bp_start_index:bp_end_index]))
         for val in values:
             filename = f'assignments/04/baseline/beam_size_{str(val)}_scores.json'
             json_data = json.loads(open(filename, 'r', encoding='utf-8').read())
             bleu_scores_alpha_zero.append(json_data['score'])
         ax1.plot(values, bleu_scores, "-o", color="blue")
-        ax1.plot(values, bleu_scores_alpha_zero, "--", color="green")
+        ax1.plot(values, bleu_scores_alpha_zero, "--^", color="green")
         plt.title(
-            'BLEU Score (blue: alpha = 0.1, green: alpha = 0.0) and Brevity Penalty (red) for different Beam Sizes')
+            'BLEU Score (blue: alpha = 0.1, green: alpha = 0.0) for different Beam Sizes')
         ax1.set_xlabel('Beam Size')
         ax1.set_ylabel('BLEU Score')
         ax1.set_ylim((0, max(bleu_scores) + 1))
-
-        ax2 = ax1.twinx()
-        ax2.plot(values, brev_pens, "-^", color="red")
-        ax1.set_xlabel('Beam Size')
-        ax2.set_ylabel("Brevity Penalty")
-        ax2.set_ylim((0, 1.05))
         plt.show()
         fig.savefig("assignments/04/baseline/beam_sizes_best_alpha_plot.png")
